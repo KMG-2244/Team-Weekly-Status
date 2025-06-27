@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPA Team Weekly Status Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --primary-color-dark: #303f9f;
+            --accent-green: #7cb342;
+            --accent-green-dark: #388e3c;
+            --text-dark: #2c3e50;
+            --text-light: #495057;
+            --bg-light: #f5f7fa;
+            --bg-sidebar: #f8f9fa;
+            --border-color: #dee2e6;
+            --border-light: #f1f3f5;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            margin: 0;
+            background-color: var(--bg-light);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 30px 0;
+            box-sizing: border-box;
+        }
+        .dashboard-wrapper {
+            display: flex;
+            max-width: 1300px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR SIZE FIXED --- */
+        .sidebar {
+            width: 260px;
+            flex-shrink: 0; /* Prevents the sidebar from shrinking */
+            background-color: var(--bg-sidebar);
+            padding: 30px 0;
+            border-right: 1px solid var(--border-color);
+        }
+        .sidebar h2 {
+            font-size: 1.3em;
+            text-align: center;
+            margin: 0 0 25px 0;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .person-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            margin: 0 auto;
+        }
+        .person-button {
+            background-color: #e9ecef;
+            border: none;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            color: var(--text-light);
+            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+            border-left: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .person-button.active,
+        .person-button:hover {
+            background-color: var(--primary-color);
+            color: #fff;
+            transform: scale(1.03);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary-color-dark);
+        }
+
+        /* Main Content Area */
+        .main-content { flex-grow: 1; padding: 40px 50px; }
+        h1 { text-align: center; font-size: 2.2em; margin: 0 0 25px 0; border-bottom: 2px solid #e0e0e0; padding-bottom: 12px; }
+        
+        .reporting-period {
+            text-align: center;
+            color: var(--text-light);
+            margin-bottom: 40px;
+            font-size: 0.95em;
+            line-height: 1.7;
+            background-color: var(--border-light);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .reporting-period strong { font-weight: 500; color: var(--text-dark); }
+
+        .person-content {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px 35px;
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+        .person-content.active { display: block; opacity: 1; transform: translateY(0); }
+
+        .status-tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); }
+        .status-tab-button {
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 10px 5px;
+            margin-right: 25px;
+            margin-bottom: -2px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            color: var(--text-light);
+            transition: all 0.2s ease;
+        }
+        .status-tab-button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); font-weight: 600; }
+        .status-tab-button:not(.active):hover { color: var(--primary-color); }
+
+        .status-tab-content { display: none; padding-top: 15px; animation: fadeIn 0.3s ease-out; }
+        .status-tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .sub-heading {
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            margin-top: 30px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .sub-heading:first-child { margin-top: 0; }
+
+        /* --- GREEN BAR ADDED TO SUMMARY CONTAINER --- */
+        .summary-container {
+            padding: 12px 0 12px 18px;
+            border-left: 4px solid var(--accent-green);
+            margin-bottom: 15px;
+        }
+        
+        .day-status { 
+            padding: 12px 0 12px 18px;
+            border-left: 4px solid var(--accent-green);
+            margin-bottom: 15px;
+        }
+        .day-status p { 
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 1.05em;
+            margin: 0 0 10px 0; 
+        }
+        
+        ul { list-style: none; padding: 0; margin: 0; }
+        ul li { 
+            position: relative; 
+            padding-left: 25px; 
+            margin-bottom: 10px; 
+            line-height: 1.5;
+            color: var(--text-light);
+            transition: all 0.2s ease-out;
+        }
+        ul li:hover {
+            background-color: var(--border-light);
+            transform: translateX(3px);
+        }
+
+        ul li::before { position: absolute; left: 0; top: 0; font-weight: bold; font-size: 1.1em; }
+        .accomplishments-list li::before { content: '✓'; color: var(--accent-green-dark); }
+        .in-progress-list li::before,
+        .upcoming-tasks-list li::before { 
+            content: '»'; 
+            color: var(--primary-color); 
+        }
+
+        .logo {
+size: 100%;
+  position:sticky;
+  top: 1.7rem;
+  left: 4rem;
+  height: 45px;
+  width: 110px;
+  border-radius: 8px;
+  height: auto;
+  width: 133px;
+}
+
+.sidebar-search {
+  width: 90%;
+  padding: 10px 14px;
+  margin: 20px auto 10px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 0.95em;
+  display: block;
+}
+
+#memberList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#memberList li {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  color: #1976d2;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+#memberList li:hover,
+#memberList li.active {
+  background-color: #e3f2fd;
+}
+
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <img alt="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANcAAABvCAYAAAB/5FWtAAAABHNCSVQICAgIfAhkiAAAIABJREFUeJztnXmcHVWVx7/1lu7ORlbAAEPYDGETAVFEQcSFVRkRcXQWGB1R1FFHR0fRARdmGMcZxQUZYRgdUGQRHUC2MAEhEMIiAZSwhyWQEBLSSaeXt9f88auaqq6uelWvltfdSf0+n5v0e6/q1rm37rnn3HPOPRdy5MiRI0eOHDly5MiRI0eOHDly5MiRI0eOHBnCiHDNFKAAmB3W2wCqcYjqEgxGt2kKUAJadNZWuy6AEev+8UYvemedogjUmZjvrYDoM3D628R5X3HeW6YohfxuANcCBwDNDuotAjcBH4lJV5Y4GDgMuBJ41fX9acDZ6AXFYa4C8FPga4wvg+0D/CewPZ29M4Ay8EXgN2kT1QGmAfOA1wALrLKT9d1cYDqis4kmgWFgENgEvAKsBp4B1gD9wEY00U84GMBKnAHXSblxHOgNwweBZ4F7gZme33YDHiBeW+2yAXh7xm1ohwJwmQ9dUcsdwPyuUw27AMcD/4AmvVUR6W1XNgN3Az8GzgAOR4w7YWAAK4jXuP8ZB3qDsDPwPaS2mcCdwHY+150IbCHZS70poO5u4M+QWhd3YnhnF2ntA94LfB9YhqPWZVXWA9cBZwGv60L7QrE1MNe7kaTyztBBDHAhyV/kmdk0pS12BR6JSa+JJp9iF+icA3waTXCbEtCbpDwD/Bx4G/HWpqlgMjPXLLSG8nuB7ZhrAfC0zz2dlFXA7hm0KQgF4PwE9D6KmDNLzAH+BniI+NI17bIJuAp4C+PAZJOVud6A1LMg2toxF8DpaBGc5MX9JN0mtcWxyDgTh84m8FcZ0mYA7wGWxKSvG2UQ+C6wKKM+8MVkY64epHK8EEJbGHNNA64JqSOsbAGOS7NxAZgN/C4Bndcg61sW2B0ZFOy17kQvK5HxoyeLzvBiMjHXImRpakagLYy5AN6EzLpJXtbtyCSeJf4hAX0vA4dkRNexxB8741kaaBztk36XjMZkYK4S8OfAEx3Q5mWuHmS98uJs4rXdLi3g79NqqA9ej3w7cen7mk+d0wn3f7ZDGfgC8i+NN6MkKSuBkxL0QygmOnP9CXABna+PvMz1GuBDwA6e+uciM3GSl/QccsKnjV7Ux3Hpuhu5KNzYAa2/ZsWkaTrwgwQ0TbSyGWkGvTH7oy0mMnMdD9wTkzYvc80ArgY+6fOcY0m+ZvhvkkkDP5yBIhTi0DMAnOxT51eBn6FQsE4xA0WGjDdDZFEuJAPn+kRkrlnAP6HQlrid5WWuKcANwFP4r5F+lOBZJjI9vz950/8fi4DHE9BzCWN9Wq9FUvZKOjdwTAEuSkDPRC8DSAVPFRONud5COiZdL3NNRZLLBL7k89zdgccSPvNBpGYmhUGygfwcsJdPvf9q/f6fdGYtKwL/noCeiV6qKEY2dQviRGGu6cDnSLZ4D2Ouq6zfXkSzuBenEV8Ns8s3k3UDoEV2JQENfqrvoSj8KQ5zfQ6oJaBnIpca/pNtKpgIzHUg8KuYNMRhLhN/B7C9Lkvy3LXAGxP0xY7A7xM8/xY0UblRRKqgfU0nzPVu0pvw2pURZA1eBvwvUuFvBu4C/pAhDefjb0VOBePJXAaKlHgq5vOTMNdG4Egfmg5Fki3Js69k7ACPin9K8Nz1wFE+dZ7EaMkTlbl2RaFMWTHUs0j9PQ3tNNgXRc/PQzsa5iBr50Lkk3wvcp3cjiIukj7/SsbunEgV48VcuwIXk51nP4y5TBS54GeC/VrCZ9eRX65THIGjusUp32Hs5thpwFLPdVGYq0A6Ac5+fXMf8FHkZomzzpmLXB9nIakWR2VdgtwzmWI8mOtEtPjPgqk6Ya4q8AEf+maS3Pf1BzQLR8V0YHGC5z2E9qt58WnGBtFGYa6k6z6/8jDwCdLdczUT+Bjy6XVCx8IUaQhEN5lrB+A8ku+nilKWM1rk+zGXiZjIz8L3bmAoIQ3f6aBv/o74keRV/ANzF6BoeO/1Ycw1i/j+Rb9SR1Iwy6j8mcBnCbf4PkuyNXFHSMJcN3TwnKNIFnzaafkBo305QcxlAp/xoTfpFg8T+emOiNA3B5AsxvFq/P1WQeu3MOb6LMl3DNhlI5KeaTvYg7AvcGkALa+gdVvXkIS5Lo5Q/xRk6lwf8xmdltXApxi7UG3HXM+hWd6LPUm2OdFE1rt21qg+tKkvbv2v4L/r9vXAuoB72jHXTiRPheCm7ZQ2bc8KU5Am4DZ6DCP1sauIw1zrgHMJd5i+juTbOqKWFlJTg7zs7ZjLRFLKD6eTzPfVoP2u5Q+RbPv7V3zqLKIQp6B72jHXGQlocZfN+K9nu4kP4hiIvjoeBHTKXLcAR4fUWUTWoGc6qDdJeQE5OttJiDDmehVljPK7L6kP7kkkBb3YhfjJgUzkA/IL5TqG9hNCEHPNRj6mpO+jiiTHRMD7gH8ko8DcMERlrheBz6MX0A57Av9F97Z5/w/yTYUhjLlM5PfwG3QHEaxiRS3fZ+y6KEk842b8t0tMQX6gdvcGMde7SMdCeCnxAoO3OoQxVx0NyrCgRgPNEknXKFHLOrSPKqoTMApzVQje3/PVhPSOAO9w1XcsYpC49V2Cv5HgbwjfTOrHXCWUwCbpe3ka/9CybRLtmOsppIOHRVDviIJChwPqSbvcjL8K1w5RmMtEs/4cn/tnIzUsCd2/Q4N4OvLDxa3nGfxzQeyMfDhh9/sx1w6kEynzWR+6tln4MVcFzYxRknm8je6Z2NeiBXyc0KKozGWiCcUPx6CtCXHpb6G14RcS9sOnfWgziL6r2o+53pWQJhM5sjMNJ5psMBgdP/YAsvKE5ZifBnyZ5GuRqOVmtB0lLjphrifxj64oo7VTknZsIVmfLbba4sUBwEsR6/Bjrn9J2C4TuUByuFBAg6mC9uxECdk5EGU27QZT9aNYPz9VrRN0wlwm8M8B9eyJQpu60XZv2Yy/U7pEZ3GAfsx1Z0LaXqC7eRwnBcooNdZJhEurPqQyPU93BtNtSO1MA50y1zp0oIMfTie9CIZOyrcD6DmKzta7XubaheRZsH5CdunbJi0MoqU43pvgsJK0y3rg68RPouKHTpnLBH6B/4Ap0T3nuF1W4B9F0ot8j53U5WWu40iedvrDPrTliIBT6Z4qtAT/PUlJEYe5tqBMsn44kO6tN4eAvwyg43Q6l6Je5vpMjDrcZQ3Z5UbcarEjCgtKY2NaWBlAW+SzSrAZh7lMJBWCaPpSjPrilKvxd/ruTLxdy17m+reE9C1p00c5fPBO0t120K7cRfZH28RlLpNgqbE94dEQScvLSEr6IW4mXi9zXZ6Qxp8G0LfVo9NQ/9nIj/J50l3z+KEf+A+UIH9Dxs+KcnxtEPziAkFrw/NQeFRW/p3vIcewH4LoCoPp+ZyU9pcT3j9p0cmxKYcBv0TqWdaMdReKCD+L7BkrKdodjXobSgiaBe6m/baeTo9s9UOR5AlaNqZAx6REFObaDoWt/ApFIWQFE62tvoOMJLdk+KxuoYHWLI+lXO8Q8rVlPXDLJN/IOJIGIZMRUTruL5BqlvXhYOvQVpSJeJZyEqxG6uElpOfruQydP5Y1DJKpzJDiaZWPn3PIvJHK4PRyX9H/QPcKzNyp2Jo7f7tCJSpLVyqY2801jXk7Rm7nlFKt0GgaIzPeecW6dtdFYa4rkGXwU6STMTYIvcB+KGh1KMPnpA3vGsUPl6PEO6em8LwncVIMZI0minlMgtScx/VW7ey+vp4TzRZNjLHtb/XA0IBR7+lrmMWeQi+Y4X1UKtIqtKpmoRm+p8uEsmEarzRKpds2lVbgn2/fqTq0Qqke56B10LdQjrgsMBtFz78ZbeFIW5UaTzRRzoojSJbQv4HiF59Ig6gIqFvPTILU9m4VDHaZ2lvcvdY0A9nGbMGmDVVz9va9xtSpJcwQ/jJNg5pJs1guFMNEV8mA4YbJXUO9LBtkGNM0MIzAB3Si6t2KgnZ/QvIOb4f3Ab8m47ORUkRUdeIRpF4nwf+izabdgoniSpMgTeNXo940aVcaLZN6tcWmDdXK4FC9Vm+a1Bpti4lJrVZvmbV6i6BiNloMVJvN375arC4dKAFGE6P9q+90HbUa+Fu06e7ZeP0TCYvQuuIc4mennYj4GbIgxoHtSE862DvF5oT3b0/ydVtHMAyM2kird+DVaqtea1aNsFEeQl25ACMtmjf3lxvLBsvlUtEgVMwRz0hRR+bl96Ho96wwA8UQ/jddStLYBWxAAbZbYtz7I5Rvsdtou2iPgJ0ZhwgNo4BRq5h9mzbUzFqlVTMK8fi7bMBI02zc1F9q3LOl1FMyKERlmiQWwIeRJfEssjUJn4zUxD/N8BndxGI6V+0eQidodsOI4cVqkvnMFtJZduHUYBhQr7T6BjZUW9WRZj1UgnlQMmC4RfOm/nJz+WC5XCwaHVWR1Ly+BZmZTyXbWXU/pFJ9nXTTHY8X/hVldoqCEev6NdmR0xbPoC0rcbEz8aNFEsMwoFZt9W7eUG3VKs1aVO4oG1Bp2RKr3FMsRJdYNsKuL6K4vrAQmCXo5MQfkt2aYCZag11GtBQDExlrUG7HKGbua1Hc43jhURScHRcGsjBn7ScNJsDAaNRaPZvWV80oDGatsRo39peaywdL5VKRToUeEK3B30ZhNmFZe9ag7QlnoCw/WcG2JqZ5DGoSxFXVfoPStbXDS2iLfRqhTHHxLMml5nGMPcy9YyRxuInBzN6BDbVWrdKsBYmhkgHDTbMpxiqXywUj4NLw1x7GXC3kC/sAGgxRsqRehgb+ryNcGxf7IEPHNxl9WslkQgUxzuo21/yQ4MDcbqGFjvVJgn2Bw5MSklT0WSpi36b1NbNqMZjhshWWC1Bp0bipv9xYPlgqlwrtzCDhBpIo9Nqz5n5o+8APCD+76BG0Ue9LKFttFpiGsqVehhKwTEY8QnCq7DvRroCJgNtTqOPjTICt/oYBjVqrd9P6mlmpNGu2q6psYAw3adzQX2ws31LqKQVKLBvJJZcX05Cf6zeMTmLphy0oCPf9KII7K7wXbatPI7RoPHAJYwdvBa3JkvqY0sK9JN+dcCRwfJIKTCiViwZJS0/JwGiavZvX18rVStMsFVqlkVazcWO/0bx3qNhTKraMotGEsBKCuBHPh6EdsN9F/pdNba69A5nTv4oCc7Ow9r0WqYkHoD1Ok2mbw2YUGnUwjuHIj+HGE+tQhM6HEtTRh3Iy3kY8Px+YDFYbreFGi5aZNOIRaDVMBl+tVqrTZjVu7Z85+97BYrlkUCiY0GojmMxWGVr10PqTbCeYjRNr+A2U0zAIr6BtK8uQxW+fBM8NQh9Ks3YQYuRurVXSiD5YglTuzyFj0PfINsSsU1SR1TIJc4HiRj9JcKaq9igUflRrtq4zMVrFYnBMX1QUgWalZl7zzGGHPzz1TZ/t65taaLTCu71Y7qNRGUEZ64KRxqFjJwL7o8X5xbQ36lyJBv03yE6NOwGZ6r+CpOtkwfkosenPkW9pomEZSkSUZH1bAr4I3E+MMLD9v/HwfSQ3rozBwR85cdoO0w1j5pz5zVLPlKJpttouqYrlKdRrdra64Lk1Ld/DbsiydQmwR8i1jwMfQSrC+pSe78WeSBKcy+RJofwCOrm+m4G5neBFtGE2KeaiiWT/FOpKBXN7t/Q16pvKWzY9bzabm2uFQh2jUG1fjHB3bpqOvTKyEF6LfFHtpOIQWq+dgrayZIFpSD38Bdm+yLRCkky0zSaJwzZLmMhw9FwKdR2Aks2OR8zoHHwi9Y1CgXqtUhrYuNZsNiq1QsfxGGORhdd8f6TaRMkNfidisO+S3XbwE5jc1sSJhEfp/CD5IByBxskbUqovCt6GDF++k61hGNQqQ70DG9eajVql1lkk4VhEuTvOgn0q0c2u65CKeBrZbZBciFTW80hfTezqdooJgAtQyvI0cChaF/9ZSvUFYVeUc+QKZCMI1DYMo0C1MtQ70L/GbNSTMViW8V6dSqKrUeT75STfWu6H6ejklctJ11o5HpHq44mn0fo6LeyGciX+FJ2TndaYNFCK76+gTaZfQcEP9pG1wTcaBaqV4Z6BjWsTMdi4BVMG4Em0bvsC2eW7O57gM7biYFuTXCCrcJp+uGnovS9BOwDeSPxNsjuhlOfnAUuRxOr4NEvDKBi1qiRYs16pGYXO8+ykYYoPQtwZvY6sSb9HsYNHpUWQC0Gn1eeIhgEUevZrUgjIdWEemlg/hva93YMm3FXocMNBND5AY3cqMlDshqzUeyN3xptJQXAYRoFaZbh308aXajPn7FIr9fT1mK3oMdRZMlfSGX0p0sX/HmX5TZqc0o0s1M5tDXcjV8f5pK8BbYcMXaegvWTPo0CEIaCGJu5elPxmFtqMmcluZ8MoUK+O9AxsfKk6Y/ZO9XJvX+T4yCyZKw2sQ8G/y5EU23d8yfHFtrbmcuMnyGH/yQyfMRWtkbOI6okESbCh3i39a6oz5uxUnzJtSiQGy3LNlab/5xqUDeqXjO/ephyjUUNpHn4z3oRkDaNQpFYd7h3YuMasjgxSiLAGm2gGjXZ4GpnrP482EeaYGNiM4kbjZrWaNJCKONyzpf8l6rVKLSzlaJbMlYUVrY72k53CNvAyJxFWox0PEymSPxMYRoF6vcaWV180QtIWTirJ5cZyZOz4Nt3P4+fFtmiK98Nz6KyyrV9FxKBWq4auuyYrc4GCfr+M0rs9Oo50bMsGDS9eAv4abZmpjjMt2SJMbDE5DBphuAZFdlzWxWe6kUuu0diM1sWfItuszBMek23NFYSnUYrtT6GtETnGH5egtfFWryYGYWuQXDZqaGvoyXT34LxcLQzGgyis6eMo0mKbwmRecwXhfuCDdC/BS64WtscAcBFKaPQtss1pGQW9pHggXztsLWqhF5tR7NtpKM96jvHHi8DZKIPzOYzPoRKgFAr93XjQ1ii53LgWpXb7Kbn6NlHwPAplOxn4MJJqWRs+NgHXo6DgD6FUE5kjSmzhZFd7VgFnogjrc9DBAH5qQdx2TtT+mejtWYvC2a5EW0IWAW8H3mp9nkK8JKINtJfwOWAFcmw/jBjYNwWgaWLIIxztCGjDMKx/2iMKc8U9djO14zpTQBXtQVqBUgp482cZSBePg3HPIhuAuO2Je19ctNAxtE8g6bId2kayD2KyBWhCnIP2ePWgcdtCRqwhpOa9jBjqMeT37MeJom8Lo0CxWOzBwMCMkBCxUOwBsxLaT1GY61K0VyaUSBemMH46dTs8gNREb4aqGnqxr9JZxEcfkogTEYvR++0k4U0ZzfTjFRzdQtJlE9I4uoTmQ/Xq8PcLBWiZ4cuHRr1SLmCmleogR44cOXLkyJEjR44cOXLkyJEjR44cOXKkBgOZxieq03k8UCL9KKEJk3Qpyos+HTnwbkdOWJCD71jr71+gw+beh1Jc+fkJbkU+lHcjH8YvcQ5A2xkln+lDvpk/eu6dh/K9z7HofQn5pIat3/cE3uNqz2PAza7756IwGzsqo4mST650XXMgcLSL9ntx/Fcno7x4v0cH+dnYxfrNHhxVFI3v9c/sjPpqIUp+OYLj8LwDndh4AMrP6I0cMaxrr7Xaezo6F820Pl+BAmNBKZuPQ9mSDOSUvQU5zA9FkQ/ed2OgaPUbUP7B9wAzrDY9h/LCt9CZZ29HJ7Fcj/r8XdZ1fnWusWj28xnOtujcD6UWr6G0aS9a/bEaOY6PY3Q6vQryQ97H2HTa81Af72fRvxkdd3QzTlSGgcbRQhTcvdR1/2HozOangRtRnx0JHOJqX8OqdyUaC4lhoPRmJkpxBhoAl1jfPYVeygzrgWZA+QRKvG/nnDvF9YyzrO824Z8+6/Wo4+26XkanMNr4gudZ13juP8aHnnM913ze8/v1rt+WWd/92HPPX/rU+xnPNXuhlxjUL8dY132yzTXP4pxBvc7z25tcz/qE57cbcE7x/Hqb+hdb1xyCJkn3c+1MtV+yvrsP5Qk8s019JmLseYzFXOCqNvfZmZBPwEk77S33oYFvY0errX7XXu2iowDcZH3vTcf9z9b3S3Aii34UUOfLaN9gaGR9FBE6iBjIjtDYBUdSXIRmnXk4kuRadHpJESdYaykKlrwYDaQz0VlPO+Iw2vfwP4ihhcJYsBo3D8WhPYg64mDP9d4c9a+3/l+MGPhUxuY/tNv2EjDf+n1n67PdLve29SLKaw7aDFhCfeKut2y1863Wcy9Akr+AwnhmoEEISrxjosH9YzRDFq1r11j3GzjvwsbBSMrioqdp3TuCM+va7XsC5cofctXvluBDSLKsttr/JjSB2vePWPfYCUGrSKIdjSTwhdbvL+C8MzdOAT6ApMBFwO/Q+52G3qutLTSsug3ECKsRY/4VksJnob7cgvr4eOvv8xHzHYEyUp2CIoX+3eoLe2x4UxC424fnmhVorI6gbTMnoLO+70FjMBCd6Kd2SMxJKLvpKiRCYbR6+VuUWN8PP0Oq1NFo9vkTpHI81+YeEw2EBkqob4t/UBza4WiAGIyVfD04R9TcgLafnIokyk5o4LrxNGKo/dELuiKAphlopgcFntYQcy1Eg7MfMcHbrWsuQEfKtoOBBui/4DC0G0WrVJFa8zp0JM6FiFn3QX11Cxpsfir/E4gp/ALoClZpoAnjM2gg/9xzfRF4xCqgth+NJtmz27SvD+fkm6uQxhEUamZYtFQRE9qT0PNogt4f2B2pfvbk/F+u59+AJOwZKNzt+7Q/BrddyNMfUCKkJhrvuyI1/nBCmKuTxWQddax93MvN+CeG2d5V5jM6EPR+lF8clCjfVgMuIDgXod3RNXRQXhVJo14k+XZDs5PfNoJpKKl/C6k5D6EZdQGSfl40kEo4FXUe+Hf8LDQp1NALf8i6bm+LHhCT7WX9fWdA27zose7fHqmCczy/20aR5VZ73mp9t5f17JU4/eDHXFNRXKVd/wyf+htIFd6Ccq67tRY/mJ7/gzAF57C7e4gWw2kymimetL4ro/c/D2lSLUbHspo4UnBvxrbTi3a2B7vPQRLZHqfedzMGUSSXPWt9EA24N6CF5S8Crv8YWowWrPrPRdLMxgVolrcH76No9g+CreuW0DaFB5C6sgBHeqzAP9X1HmimeRFJxwH0gg5Cne6X+/A2dNzMIeil+A2shYjB/mjVvQEx2W7WM1egAWCf1GGrSDORRJyNpNMyq02gmXE+2ntWs9q7CmVTctNQtJ67ABlidrPomY/60U/q2TgESaK6Rd+taL3hVodKaF2xGL2n1wb0gQ17gg4zjhVxTnS0jTB9aIJ4DWKi+3AMQrbGsjuaUGehsWUbTJ5FbS5bv3t3ndufe617222QbDcx2CoqaCzZk/Ja/8sdRGEu+8FHub4bxLH2ebHAIgLUOd4E+SuRuvVF6/PFSKcOgr1us1/6UnSSxUKkFg2iwex3WuAbrf+fwlEtliHm8jOeFBCzLEVMsB/+M6xd76M4CXGWo4Fu19ti7IDbFa0t90Lrqz9nNHP1ocnLHli25c6LAWRAej+ywM63vr+d9vn0Z+GoyUU04XgX5iWUtu5Wq/5DcU4WSQLD9Sx7wp6JNk6+2XrGmYi5TOvzLKQWjqC+2cP6+zI0oe1h1dtirKprT8q25hMXb0aJaEF9sZv17FBtJApz2YRdinTxHyBR/H6kj3rxLdR4u34/Dr8BWeg2E/109gJa2D9gfX4HGlirkP7vt3/sUOv/IpocenDMu/si0b7RdX0RMev1yJJ3EP4vxq63z6Jjmus6+wC3CpJY7t82W/TvhRjHPbDLSPqdijSDolWHX/6/XmS2HkQaxYh1zxP4q7s27gD+Dk2MRYseP0lXQ8w7jPphWZs6o6JpPW97nCOcKqg/DkQqq3s82pP6LOu3Ha3Pv0VrKKx22JOS9/334ai59rYbe7Lzbqlpt4lrEaP7dA1aPz/hf7mDTnYi34f8Hscgs6+9fd7rc3ga5Sloh7rr/7DdafYMZNP7GNJ9P4zWA3egTvZuWiyihSfIeHKk53fbIuhmrgIaUHdbtB2BIxVszMCRkidZxY0DkWXrVSSRF1nPWmrR/WUkPfZgtDpiWM+OMtmU0WL6FYvGQTSTrqH92WMbiZZTpBdJ+/tRv6Wxt6qCVLm9cKT7ZmT5s/187rHQi/rjBNTWbyML4AL0bpto/dOPDGN7e55nf16DoyLa426251pbuxph7GT2RzTZjiBXyO2ob0LRCXPZ1/4MrQP2R9afC3HELygBSdP1uYBUJnfWnwKOuhcmst3X9KEX/Ufr2SbOQtar+++NJGwNrR/WWd9Pt2icj16UW/oaaOCuQjPqO33oex1aIwxa9fZbdMxBjtU9rXofRIvqRcDfIin2OGKqaYzV8203w5k4pvcyUoV/hwaGu09raPv6Xmh2v4fRk4zfGmgPlN9xCEdNW4UmE/c77EUD8h6ker/DRWMQwtZcFasd70JGsecR887EGezuOgwc90QVTewfQ/1/AtKitqA18mnIwf4imtj3RWZ7kG/LXjPak/4J1u+Poffzp9b3qxirzv8eTQCpw0Czr4lMp6CXdz2ORWYOMokvJ9g56D2/6Ujr+360fmqHA100nGh9d671eR3OGuJq6zvbfH6a9fkFHJUCpD5cZ/12jvXdp3EY1XY6nudpg6132w7nFThOWpC0sgep3d63WM+361iLw4xVV3u8DmB3eRDHt7XW+u4j1mfb+TyMEzFjO0SvQ+oUKBNWUP2/sq45GK0lTBy19ySrbvvapYw9SdIOAoiSl3APHMuq/f42uD5/3LruOMQQVRwtoRdnjF3qqvMgnHWaiaS5/fdKRq+tF1nfuR3C9t+P42g6BaR6miiaKFbKiiiS63o0E9udZx+rCpJQ89DCeAlqWIvRs32BsWrFehRJMWD93Q79SM9+Dc767YfIFTCM42+5B82CtiSzJdaDOFILJN6vwpmd7RCgxUha2arDjUj6FdAMb4d+DaHF/m2MdpRuRBbUQRwH6N3IaXo6so7ORIPpfvQybfXiGTQ59DAvJPM9AAABPUlEQVQ6S0oPMprYqsp1Vj/YqvjlaLDWcdwij1h9cxfO2mIlWufWcbQGrHbZamg/CgCYg1RaUF9ehONSeJCxBh473CwKc61Ca8SPImk4D/XhH5DKaPuN1iKmN3FUuio6bG8DGjP2enkFWqKcjibtOdZ3tyHflzsw4XHr2o8iNXSude0dKOrIDr2zJ8/FVh/ESnsQJbbQ9uQ3Ga0Tl1zf21EBQfV5rTm2SmJa34epG/aAaLa51mYCm84gum2UcfwotjWyxeiOdE8+dhvs4NuGDy12PV7/jJ0Ax1Z1mp773ZY0b31umoqu74LWqt5+cH/n13d2XUH9XHB97+0fd91+v7VDL05sYgv1h02vuz+877zs+t7bB3adLcIPggi71q8fc+TIkSNHjhw5cuTIkSNHjhw5cuTIkSNHjhwTB/8HMbsyChM6hqMAAAAASUVORK5CYII=" class="logo no-print" />
+            <br><br><br><br>
+            <h2>Team Members</h2>
+<!-- <br><br><br> -->
+<input type="text" id="memberSearch" class="sidebar-search" placeholder="Search team...">
+            <br>
+            <div class="person-selector">
+                <button class="person-button active" onclick="showPersonStatus(this, 'person1')">🧑‍💻 Ankit Kumar</button>
+                <button class="person-button" onclick="showPersonStatus(this, 'person2')">👩‍💻 Devansh Mishra</button>
+                <button class="person-button" onclick="showPersonStatus(this, 'person3')">👩‍💻 Ritik Gupta</button>
+                <!-- <button class="person-button" onclick="showPersonStatus(this, 'person4')">👨‍💻 Shubham Dhyani</button>
+                <button class="person-button" onclick="showPersonStatus(this, 'person5')">👨‍💻 Sachin Kumar</button> -->
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <h1>RPA Team Weekly Status Report</h1>
+            <p class="reporting-period">
+                <strong>This Week:</strong> <span id="thisWeekRange"></span> &nbsp;&bull;&nbsp; <strong>Last Week:</strong> <span id="lastWeekRange"></span>
+            </p>
+
+            <div id="person1" class="person-content active">
+                <div class="status-tabs">
+                    <button class="status-tab-button active" onclick="openPersonTab(event, 'person1-upcoming')">Current Week's Focus</button>
+                    <button class="status-tab-button" onclick="openPersonTab(event, 'person1-lastWeek')">Last Week's Outcomes</button>
+                </div>
+                <div id="person1-upcoming" class="status-tab-content active">
+                    <p class="sub-heading">Today's Status (Monday, <span class="date-placeholder-today"></span>)</p>
+                    <ul class="in-progress-list">
+                        <li>Working on the development of <b>Output Data Parsing and Initial Data Access</b> in Commercial Condo Process.</li>
+                    </ul>
+                    <p class="sub-heading">Objectives for the Rest of the Week</p>
+                    <ul class="upcoming-tasks-list">
+                        <li>Develop <b>Output Data Parsing and Initial Data Access</b> part in Commercial Condo Process.</li>
+                        <li>Develop <b>Transcriber API Outcome Validation & Fallback Logic</b> in Commercial Condo Process.</li>
+                    </ul>
+                </div>
+                <div id="person1-lastWeek" class="status-tab-content">
+                    <div class="summary-container">
+                        <p class="sub-heading">Weekly Summary</p>
+                        <ul class="accomplishments-list">
+                            <li>Worked on analysis and development of the Commercial Condo Process, including Acord Transcriber API integration; development is in progress and expected to be completed by 9th July.</li>
+                        </ul>
+                    </div>
+                    <p class="sub-heading">Daily Breakdown</p>
+                    <div class="day-status"><p>Monday (<span class="date-placeholder" data-day-index="0"></span>):</p><ul class="accomplishments-list"><li>Learned basic concepts of UiPath's Agentic Automations and revised SQL.</li></ul></div>
+                    <div class="day-status"><p>Tuesday (<span class="date-placeholder" data-day-index="1"></span>):</p><ul class="accomplishments-list"><li>Learned basic concepts of UiPath's Agentic Automations and revised SQL.</li></ul></div>
+                    <div class="day-status"><p>Wednesday (<span class="date-placeholder" data-day-index="2"></span>):</p><ul class="accomplishments-list"><li>Worked on <b>Acord Transcriber API & Schema Understanding</b> in Commercial Condo Process.</li></ul></div>
+                    <div class="day-status"><p>Thursday (<span class="date-placeholder" data-day-index="3"></span>):</p><ul class="accomplishments-list"><li>Worked on <b>Existing Workflow Impact Assessment</b> in Commercial Condo Process.</li></ul></div>
+                    <div class="day-status"><p>Friday (<span class="date-placeholder" data-day-index="4"></span>):</p><ul class="accomplishments-list"><li>Developed the <b>Acord Transcriber API Authentication and Submission</b> part in Commercial Condo Process.</li></ul></div>
+                </div>
+            </div>
+
+            <div id="person2" class="person-content">
+                 <div class="status-tabs">
+                    <button class="status-tab-button active" onclick="openPersonTab(event, 'person2-upcoming')">Current Week's Focus</button>
+                    <button class="status-tab-button" onclick="openPersonTab(event, 'person2-lastWeek')">Last Week's Outcomes</button>
+                </div>
+                <div id="person2-upcoming" class="status-tab-content active">
+                    <p class="sub-heading">Today's Status (Monday, <span class="date-placeholder-today"></span>)</p>
+                    <ul class="in-progress-list">
+                        <li>Going through the excel and video resources provided by Mahavir.</li>
+                    </ul>
+                    <p class="sub-heading">Objectives for the Rest of the Week</p>
+                    <ul class="upcoming-tasks-list">
+                        <li>Create an Automation for Amynta error analysis.</li>
+                        <li>Contacting with Uipath support team regarding Agentic Automation issues.</li>
+                    </ul>
+                </div>
+                <div id="person2-lastWeek" class="status-tab-content">
+                    <div class="summary-container">
+                        <p class="sub-heading">Weekly Summary</p>
+                        <ul class="accomplishments-list">
+                            <li>Took KT for Amynta Testing/Automation from Mahavir learned basics of SQL and Uipath's Agentic Automation.</li>
+                        </ul>
+                    </div>
+                    <p class="sub-heading">Daily Breakdown</p>
+                    <div class="day-status"><p>Monday (<span class="date-placeholder" data-day-index="0"></span>):</p><ul class="accomplishments-list"><li>Learned basic concepts of UiPath's Agentic Automations and revised SQL.</li></ul></div>
+                    <div class="day-status"><p>Tuesday (<span class="date-placeholder" data-day-index="1"></span>):</p><ul class="accomplishments-list"><li>Learned basic concepts of UiPath's Agentic Automations and revised SQL.</li></ul></div>
+                    <div class="day-status"><p>Wednesday (<span class="date-placeholder" data-day-index="2"></span>):</p><ul class="accomplishments-list"><li>Learned basic concepts of UiPath's Agentic Automations and revised SQL.</li></ul></div>
+                    <div class="day-status"><p>Thursday (<span class="date-placeholder" data-day-index="3"></span>):</p><ul class="accomplishments-list"><li>Connected with Mahavir for Amynta testing KT.</li></ul></div>
+                    <div class="day-status"><p>Friday (<span class="date-placeholder" data-day-index="4"></span>):</p><ul class="accomplishments-list"><li>Going through the excel and video resources provided by Mahavir.</li></ul></div>
+                </div>
+            </div>
+
+            <div id="person3" class="person-content">
+                <div class="status-tabs">
+                    <button class="status-tab-button active" onclick="openPersonTab(event, 'person3-upcoming')">Current Week's Focus</button>
+                    <button class="status-tab-button" onclick="openPersonTab(event, 'person3-lastWeek')">Last Week's Outcomes</button>
+                </div>
+                <div id="person3-upcoming" class="status-tab-content active">
+                    <p class="sub-heading">Today's Status (Monday, <span class="date-placeholder-today"></span>)</p>
+                    <ul class="in-progress-list">
+                        <li>Going through the excel and video resources provided by Mahavir.</li>
+                    </ul>
+                    <p class="sub-heading">Objectives for the Rest of the Week</p>
+                    <ul class="upcoming-tasks-list">
+                        <li>Create an Automation for Amynta error analysis.</li>
+                        <li>Contacting with Uipath support team regarding Agentic Automation issues.</li>
+                    </ul>
+                </div>
+                <div id="person3-lastWeek" class="status-tab-content">
+                    <div class="summary-container">
+                        <p class="sub-heading">Weekly Summary</p>
+                        <ul class="accomplishments-list">
+                            <li>Took KT for Amynta Testing/Automation from Mahavir learned basics of SQL and Uipath's Agentic Automation.</li>
+                        </ul>
+                    </div>
+                    <p class="sub-heading">Daily Breakdown</p>
+                    <div class="day-status"><p>Monday (<span class="date-placeholder" data-day-index="0"></span>):</p><ul class="accomplishments-list"><li>Learned basic concepts of UiPath's Agentic Automations and revised SQL.</li></ul></div>
+                    <div class="day-status"><p>Tuesday (<span class="date-placeholder" data-day-index="1"></span>):</p><ul class="accomplishments-list"><li>Learned basic concepts of UiPath's Agentic Automations and revised SQL.</li></ul></div>
+                    <div class="day-status"><p>Wednesday (<span class="date-placeholder" data-day-index="2"></span>):</p><ul class="accomplishments-list"><li>Learned basic concepts of UiPath's Agentic Automations and revised SQL.</li></ul></div>
+                    <div class="day-status"><p>Thursday (<span class="date-placeholder" data-day-index="3"></span>):</p><ul class="accomplishments-list"><li>Connected with Mahavir for Amynta testing KT.</li></ul></div>
+                    <div class="day-status"><p>Friday (<span class="date-placeholder" data-day-index="4"></span>):</p><ul class="accomplishments-list"><li>Going through the excel and video resources provided by Mahavir.</li></ul></div>
+                </div>
+            </div>
+
+            <div id="person4" class="person-content">
+                 <div class="status-tabs">
+                    <button class="status-tab-button active" onclick="openPersonTab(event, 'person4-upcoming')">Current Week's Focus</button>
+                    <button class="status-tab-button" onclick="openPersonTab(event, 'person4-lastWeek')">Last Week's Outcomes</button>
+                </div>
+                <div id="person4-upcoming" class="status-tab-content active">
+                    <p class="sub-heading">Today's Status (Monday, <span class="date-placeholder-today"></span>)</p>
+                    <ul class="in-progress-list">
+                        <li>Building out the primary components for the new customer onboarding wizard.</li>
+                    </ul>
+                    <p class="sub-heading">Objectives for the Rest of the Week</p>
+                    <ul class="upcoming-tasks-list">
+                        <li>Conduct comprehensive performance audit of the mobile web application.</li>
+                        <li>Prototype new UI interactions for enhanced user engagement.</li>
+                        <li>Collaborate with design team on mockups for the new profile page.</li>
+                    </ul>
+                </div>
+                <div id="person4-lastWeek" class="status-tab-content">
+                    <div class="summary-container">
+                        <p class="sub-heading">Weekly Summary</p>
+                        <ul class="accomplishments-list">
+                            <li>Significantly enhanced the user interface by implementing responsive designs, developing new data visualizations, and refactoring core components in React for a 10% performance gain.</li>
+                        </ul>
+                    </div>
+                    <p class="sub-heading">Daily Breakdown</p>
+                    <div class="day-status"><p>Monday (<span class="date-placeholder" data-day-index="0"></span>):</p><ul class="accomplishments-list"><li>Implemented responsive design updates across core platform pages.</li></ul></div>
+                    <div class="day-status"><p>Tuesday (<span class="date-placeholder" data-day-index="1"></span>):</p><ul class="accomplishments-list"><li>Developed interactive data visualization module for the admin dashboard.</li></ul></div>
+                    <div class="day-status"><p>Wednesday (<span class="date-placeholder" data-day-index="2"></span>):</p><ul class="accomplishments-list"><li>Conducted successful A/B test on new sign-up flow, resulting in 5% conversion lift.</li></ul></div>
+                    <div class="day-status"><p>Thursday (<span class="date-placeholder" data-day-index="3"></span>):</p><ul class="accomplishments-list"><li>Refactored critical front-end components in React, improving load times by 10%.</li></ul></div>
+                    <div class="day-status"><p>Friday (<span class="date-placeholder" data-day-index="4"></span>):</p><ul class="accomplishments-list"><li>Addressed and closed all high-priority accessibility issues from the latest audit.</li></ul></div>
+                </div>
+            </div>
+
+            <div id="person5" class="person-content">
+                <div class="status-tabs">
+                    <button class="status-tab-button active" onclick="openPersonTab(event, 'person5-upcoming')">Current Week's Focus</button>
+                    <button class="status-tab-button" onclick="openPersonTab(event, 'person5-lastWeek')">Last Week's Outcomes</button>
+                </div>
+                <div id="person5-upcoming" class="status-tab-content active">
+                    <p class="sub-heading">Today's Status (Monday, <span class="date-placeholder-today"></span>)</p>
+                    <ul class="in-progress-list">
+                        <li>Writing database migrations for the new inventory management system.</li>
+                    </ul>
+                    <p class="sub-heading">Objectives for the Rest of the Week</p>
+                    <ul class="upcoming-tasks-list">
+                        <li>Create a new internal CLI tool to streamline the development setup process.</li>
+                        <li>Conduct a security review of all external-facing APIs.</li>
+                        <li>Begin API development for the inventory management system.</li>
+                    </ul>
+                </div>
+                <div id="person5-lastWeek" class="status-tab-content">
+                    <div class="summary-container">
+                        <p class="sub-heading">Weekly Summary</p>
+                        <ul class="accomplishments-list">
+                            <li>Led backend development for the new payments module, deploying three critical microservices and implementing a secure OAuth 2.0 flow.</li>
+                            <li>Ensured system reliability by resolving a complex database deadlock issue and delivering comprehensive integration test coverage.</li>
+                        </ul>
+                    </div>
+                    <p class="sub-heading">Daily Breakdown</p>
+                    <div class="day-status"><p>Monday (<span class="date-placeholder" data-day-index="0"></span>):</p><ul class="accomplishments-list"><li>Led the backend team for the new payments module, defining all API endpoints.</li></ul></div>
+                    <div class="day-status"><p>Tuesday (<span class="date-placeholder" data-day-index="1"></span>):</p><ul class="accomplishments-list"><li>Implemented OAuth 2.0 authorization for secure third-party API access.</li></ul></div>
+                    <div class="day-status"><p>Wednesday (<span class="date-placeholder" data-day-index="2"></span>):</p><ul class="accomplishments-list"><li>Deployed three critical microservices to the production Kubernetes cluster.</li></ul></div>
+                    <div class="day-status"><p>Thursday (<span class="date-placeholder" data-day-index="3"></span>):</p><ul class="accomplishments-list"><li>Resolved a complex database deadlock issue that was causing intermittent failures.</li></ul></div>
+                    <div class="day-status"><p>Friday (<span class="date-placeholder" data-day-index="4"></span>):</p><ul class="accomplishments-list"><li>Wrote comprehensive integration tests for the new payments API.</li></ul></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+    function getMostRecentMonday(d) {
+        d = new Date(d);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        return new Date(d.setDate(diff));
+    }
+
+    function formatDate(date, options) {
+        return date.toLocaleDateString('en-IN', options);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const thisWeekMonday = getMostRecentMonday(today);
+        const thisWeekFriday = new Date(thisWeekMonday);
+        thisWeekFriday.setDate(thisWeekMonday.getDate() + 4);
+
+        const lastWeekMonday = new Date(thisWeekMonday);
+        lastWeekMonday.setDate(thisWeekMonday.getDate() - 7);
+        const lastWeekFriday = new Date(lastWeekMonday);
+        lastWeekFriday.setDate(lastWeekMonday.getDate() + 4);
+
+        const shortDateOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+        const longDateOptions = { month: 'long', day: 'numeric' };
+
+        document.getElementById('thisWeekRange').textContent =
+            `${formatDate(thisWeekMonday, shortDateOptions)} - ${formatDate(thisWeekFriday, shortDateOptions)}`;
+        document.getElementById('lastWeekRange').textContent =
+            `${formatDate(lastWeekMonday, shortDateOptions)} - ${formatDate(lastWeekFriday, shortDateOptions)}`;
+
+        document.querySelectorAll('.date-placeholder').forEach(span => {
+            const dayIndex = parseInt(span.dataset.dayIndex);
+            const date = new Date(lastWeekMonday);
+            date.setDate(lastWeekMonday.getDate() + dayIndex);
+            span.textContent = formatDate(date, longDateOptions);
+        });
+
+        document.querySelectorAll('.date-placeholder-today').forEach(span => {
+            span.textContent = formatDate(today, longDateOptions);
+        });
+
+        const initialActivePerson = document.querySelector('.person-button.active');
+        if (initialActivePerson) {
+            showPersonStatus(initialActivePerson, 'person1');
+        }
+
+        // SEARCH FUNCTIONALITY
+        const searchInput = document.getElementById('memberSearch');
+        searchInput.addEventListener('input', function () {
+            const query = this.value.toLowerCase();
+            document.querySelectorAll('.person-button').forEach(button => {
+                const name = button.textContent.toLowerCase();
+                button.style.display = name.includes(query) ? 'block' : 'none';
+            });
+        });
+    });
+
+    function showPersonStatus(button, personId) {
+        document.querySelectorAll('.person-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.person-content').forEach(content => content.classList.remove('active'));
+
+        button.classList.add('active');
+        const personContentDiv = document.getElementById(personId);
+        personContentDiv.classList.add('active');
+
+        const defaultTab = personContentDiv.querySelector('.status-tab-button');
+        const defaultTabContentId = defaultTab.getAttribute('onclick').match(/'([^']+)'/g)[0].replace(/'/g, '');
+        openPersonTab({ currentTarget: defaultTab }, defaultTabContentId);
+    }
+
+    function openPersonTab(evt, tabContentId) {
+        const parentContent = evt.currentTarget.closest('.person-content');
+        const tabcontent = parentContent.getElementsByClassName("status-tab-content");
+        for (let i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove('active');
+        }
+
+        const tabbuttons = parentContent.getElementsByClassName("status-tab-button");
+        for (let i = 0; i < tabbuttons.length; i++) {
+            tabbuttons[i].classList.remove("active");
+        }
+
+        document.getElementById(tabContentId).classList.add('active');
+        evt.currentTarget.classList.add("active");
+    }
+</script>
+
+</body>
+</html>
